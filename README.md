@@ -1,13 +1,17 @@
-# Sample Hardhat Project
+# Projet Blockstarter
+Voir dans le package.json pour avoir la liste des commandes disponibles
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+Pour lancer un noeud en local :
+```
+npm run hh-node
+```
 
-Try running some of the following tasks:
+Pour déployer le smart contract CampaignFactory
+```
+npm run hh-deploy
+```
 
-```shell
-npx hardhat help
-npx hardhat test
-GAS_REPORT=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.js
+Pour lancer le serveur local
+```
+npm run dev
 ```

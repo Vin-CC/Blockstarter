@@ -6,7 +6,8 @@
     "preview": "vite preview",
     "hh-deploy": "npx hardhat run --network localhost scripts/deploy.js",
     "hh-test": "npx hardhat test",
-    "hh-compile": "npx hardhat compile --force"
+    "hh-compile": "npx hardhat compile --force",
+    "hh-node": "npx hardhat node"
   },
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^1.0.2",
