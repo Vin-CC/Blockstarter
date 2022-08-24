@@ -99,6 +99,22 @@ const getDeployedCampaignsInformation = async (campaignAddressList) => {
     }
 }
 
+const getCampaignInformations = async (campaignAddress) => {
+    try {
+        const campaignInstance = await getCampaingInstance(campaignAddress);
+        const name = await campaignInstance.name();
+        const symbol = await campaignInstance.symbol();
+
+        return {
+            address: campaignAddress,
+            name,
+            symbol
+        }
+    } catch (error) {
+        console.error("getCampaignInformations", error);
+    }
+}
+
 const showDeployedCampaigns = async () => {
     // Get the components
     let campaignListElement = document.getElementById("campaign-list");
@@ -117,6 +133,18 @@ const showDeployedCampaigns = async () => {
         // display the campaign cards
         elementsList.forEach(elem => campaignListElement.appendChild(elem))
     }
+}
+
+const showCurrentCampaign = async (campaignAddress) => {
+    const campaignInformations = await getCampaignInformations(campaignAddress)
+
+    const addressElem = document.getElementById("campaign-address");
+    const nameElem = document.getElementById("name");
+    const symbolElem = document.getElementById("symbol");
+
+    addressElem.innerText = campaignInformations.address
+    nameElem.innerText = campaignInformations.name
+    symbolElem.innerText = campaignInformations.symbol
 }
 
 // Update state and UI depending of the connection to MetaMask
@@ -205,6 +233,12 @@ async function init() {
     if (state.provider) {
         await updateConnectState()
         await showDeployedCampaigns()
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const addressCurrentCampaign = urlParams.get("addressCampaign")
+        if (addressCurrentCampaign) {
+            await showCurrentCampaign(addressCurrentCampaign)
+        }
     } else {
         mainBlock.innerHTML = "<h1>MetaMask n'est pas présent, installez le!</h1>"
     }
