@@ -2,6 +2,7 @@ import { ethers } from "ethers";
 import CampaignJSON from "./contracts/Campaign.json";
 import CampaignFactoryJSON from "./contracts/CampaignFactory.json";
 
+import { disableButton, enableButton, drawCampaignCard } from "./js/uiFunctions";
 import state from "./state";
 
 /**
@@ -20,7 +21,7 @@ const ABI = {
 }
 
 /**
- * FUNCTIONS
+ * OTHERS FUNCTIONS
  */
 
 const getProvider = async () => {
@@ -42,6 +43,20 @@ const getCampaignFactoryInstance = async (needSigner = false) => {
     return new ethers.Contract(CAMPAIGN_FACTORY_ADDRESS, ABI.FACTORY, role);
 }
 
+const getCampaingInstance = async (campaignAddress, needSigner = false) => {
+    if (!campaignAddress) {
+        return null
+    }
+
+    let role;
+    if (needSigner) {
+        role = state.signer
+    } else {
+        role = state.provider
+    }
+    return new ethers.Contract(campaignAddress, ABI.TOKEN, role);
+}
+
 // Check if the dApp is connected to MetaMask
 const isMetaMaskConnected = async () => {
     try {
@@ -55,17 +70,53 @@ const isMetaMaskConnected = async () => {
 // Get the list of the deployes Campaigns
 const getDeployedCampaigns = async () => {
     try {
-        const campaignFactory = await getCampaignFactoryInstance();
-        return await campaignFactory.getDeployedCampaigns();
+        const campaignFactoryInstance = await getCampaignFactoryInstance();
+        return await campaignFactoryInstance.getDeployedCampaigns();
     } catch (error) {
         console.error("getDeployedCampaigns error", error);
     }
 }
 
+const getDeployedCampaignsInformation = async (campaignAddressList) => {
+    if (campaignAddressList.length === 0) {
+        return []
+    }
+
+    try {
+        let campaignList = []
+        // for each campaign address, get the instance then call the contract's methods
+        for (let i = 0; i < campaignAddressList.length; i++) {
+            const campaignAddress = campaignAddressList[i];
+            const campaignInstance = await getCampaingInstance(campaignAddress);
+            const name = await campaignInstance.name();
+            const symbol = await campaignInstance.symbol();
+
+            campaignList.push({ name, address: campaignAddress, symbol })
+        }
+        return campaignList
+    } catch (error) {
+        console.error("getDeployedCampaignsInformation error", error);
+    }
+}
+
 const showDeployedCampaigns = async () => {
-    const deployedCampaigns = await getDeployedCampaigns();
+    // Get the components
+    let campaignListElement = document.getElementById("campaign-list");
     let nbCampaignsElems = document.getElementsByName("nb-campaigns");
-    nbCampaignsElems.forEach(elem => elem.innerText = deployedCampaigns.length)
+
+    // Fetch informations only if there is a component to display them
+    if (campaignListElement && nbCampaignsElems) {
+        const deployedCampaigns = await getDeployedCampaigns();
+        const listWithInformations = await getDeployedCampaignsInformation(deployedCampaigns);
+        
+        // get a htmlElement card for each campaign
+        const elementsList = listWithInformations.map(campaign => drawCampaignCard(campaign))
+        
+        // display the number of campaigns
+        nbCampaignsElems.forEach(elem => elem.innerText = deployedCampaigns.length)
+        // display the campaign cards
+        elementsList.forEach(elem => campaignListElement.appendChild(elem))
+    }
 }
 
 // Update state and UI depending of the connection to MetaMask
@@ -102,24 +153,42 @@ window.connect = async function connect() {
         // send ether and pay to change state within the blockchain.
         // For this, you need the account signer...
         getSigner();
-        console.log("state.signer", state.signer);
     }
 }
 
-window.addCampaign = async function addCampaign() {
-    if (state.isConnected) {
-        const campaignFactoryInstance = await getCampaignFactoryInstance(true);
-        // uint _minimum, string memory _name, string memory _symbol)
+window.addCampaign = async function addCampaign(componnent) {
+    if (state.isConnected ) {
+        const errorComponent = document.getElementsByName("error-message-add-campaign");
         const nameInput = document.getElementById("name");
         const symbolInput = document.getElementById("symbol");
         const minimumInput = document.getElementById("minimum");
-        const name = nameInput.value;
-        const symbol = symbolInput.value;
-        const minimum = minimumInput.value;
-        console.log("name", name);
-        console.log("symbol", symbol);
-        console.log("minimum", minimum);
-        campaignFactoryInstance.createCampaign(minimum, name, symbol);
+        const nameValue = nameInput.value;
+        const symbolValue = symbolInput.value;
+        const minimumValue = minimumInput.value;
+
+        if (nameValue && symbolValue && minimumValue) {
+            disableButton(componnent)
+            
+            errorComponent.forEach(cmp => cmp.hidden = true)
+
+            try {
+                const campaignFactoryInstance = await getCampaignFactoryInstance(true);
+                await campaignFactoryInstance.createCampaign(minimumValue, nameValue, symbolValue);
+                window.location = "/"
+            } catch (error) {
+                errorComponent.forEach(cmp => {
+                    cmp.innerText = "Une erreur a eu lieu"
+                    cmp.hidden = false
+                })
+            } finally {
+                enableButton(componnent)
+            }
+        } else {
+            errorComponent.forEach(cmp => {
+                cmp.innerText = "Tous les champs sont obligatoires !"
+                cmp.hidden = false
+            })
+        } 
     }
 }
 
