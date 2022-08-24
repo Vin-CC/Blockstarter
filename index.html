@@ -1,24 +1,44 @@
 <html>
-    <head>
-        <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-        <title>Blockstarter</title>
-        <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
-        
-        <script type="module" src="./src/index.js"></script>
-        
-        <link rel="stylesheet" href="./src/css/pico.min.css">
-    </head>
-    <body>
-        <main id="main" class="container">
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <title>Blockstarter</title>
+    <link rel="icon" type="image/x-icon" href="/images/favicon.ico">
+    
+    <script type="module" src="./src/index.js"></script>
+    
+    <link rel="stylesheet" href="./src/css/pico.min.css">
+</head>
+<body>
+    <main id="main" class="container">
+        <nav>
+            <ul>
+                <li><h1>Blockstarter</h1></li>
+            </ul>
+            <ul>
+                <li>
+                    <button id="connect-button" type="button" onclick="connect()" name="disconnected-only">Connection</button>
+                    <p id="address" name="connected-only"></p>
+                </li>
+            </ul>
+        </nav>
+        <div class="grid">
+            <h2>Liste des campagnes (<b name="nb-campaigns">0</b>)</h2>
             <div>
-                <h1>Connexion à Metamask</h1>
+                <button name="connected-only">Ajouter une campagne</button>
             </div>
-            <div class="grid">
-                <div>
-                    <button id="connect-button" type="button" onclick="connect()">Connection</button>
-                </div>
-                <p>Est connecté: <span id="connected-status"></span></p>
-            </div>
-        </main>
-    </body>
+        </div>
+        <div id="campaign-list">
+            <article>
+                <h3>Name</h3>
+                <p>Détails de la campagne</p>
+                <a href="src/pages/campaign.html">Détail</a>
+            </article>
+            <article>
+                <h3>Name</h3>
+                <p>Détails de la campagne</p>
+                <a href="src/pages/campaign.html">Détail</a>
+            </article>
+        </div>
+    </main>
+</body>
 </html>
