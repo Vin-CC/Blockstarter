@@ -32,8 +32,14 @@ const getSigner = async () => {
 }
 
 // Get an instance of the CampaignFactory contract
-const getCampaignFactoryInstance = async () => {
-    return new ethers.Contract(CAMPAIGN_FACTORY_ADDRESS, ABI.FACTORY, state.provider);
+const getCampaignFactoryInstance = async (needSigner = false) => {
+    let role;
+    if (needSigner) {
+        role = state.signer
+    } else {
+        role = state.provider
+    }
+    return new ethers.Contract(CAMPAIGN_FACTORY_ADDRESS, ABI.FACTORY, role);
 }
 
 // Check if the dApp is connected to MetaMask
@@ -97,6 +103,23 @@ window.connect = async function connect() {
         // For this, you need the account signer...
         getSigner();
         console.log("state.signer", state.signer);
+    }
+}
+
+window.addCampaign = async function addCampaign() {
+    if (state.isConnected) {
+        const campaignFactoryInstance = await getCampaignFactoryInstance(true);
+        // uint _minimum, string memory _name, string memory _symbol)
+        const nameInput = document.getElementById("name");
+        const symbolInput = document.getElementById("symbol");
+        const minimumInput = document.getElementById("minimum");
+        const name = nameInput.value;
+        const symbol = symbolInput.value;
+        const minimum = minimumInput.value;
+        console.log("name", name);
+        console.log("symbol", symbol);
+        console.log("minimum", minimum);
+        campaignFactoryInstance.createCampaign(minimum, name, symbol);
     }
 }
 
